@@ -154,13 +154,13 @@ const Header = () => {
                 href="#"
                 className="px-5 py-2 font-satoshi font-medium text-black dark:text-white"
               >
-                Sign In
+                Đăng nhập
               </Link>
               <Link
                 href="#"
                 className="rounded-full bg-primary px-5 py-2 font-satoshi font-medium text-white hover:bg-primary-dark"
               >
-                Sign Up
+                Đăng kí
               </Link>
             </div>
             {/* <!--=== Nav Right End ===--> */}

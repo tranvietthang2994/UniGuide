@@ -81,11 +81,11 @@ const BlogItem = ({ blog }: { blog: Blog }) => {
 
         <h3 className="mb-4 font-satoshi text-custom-2xl font-bold -tracking-[0.3px] text-black hover:text-primary dark:text-white">
           <Link href={`#`}>
-            {blog?.title.substring(0, 40)}...
+            {blog?.title.length > 50 ? `${blog?.title.substring(0, 50)}...` : blog?.title}
           </Link>
         </h3>
-        <p className="w-full max-w-[272px] dark:text-gray-5">
-          {blog?.metadata.substring(0, 60)}
+        <p className="w-full dark:text-gray-5">
+          {blog?.metadata.substring(0, 100)}...
         </p>
       </div>
     </article>

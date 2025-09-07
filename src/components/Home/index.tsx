@@ -9,20 +9,20 @@ import FAQ from "./FAQ";
 import Blog from "./Blog";
 import Newsletter from "./Newsletter";
 const Home = () => {
-	return (
-		<>
-			<Hero />
-			<Features />
-			<FeaturesWithImage />
-			<Counter />
-			<CallToAction />
-			<Testimonials />
-			<Pricing />
-			<FAQ />
-			<Newsletter />
-			<Blog />
-		</>
-	);
+  return (
+    <>
+      <Hero />
+      <Features />
+      {/* <FeaturesWithImage /> */}
+      <Counter />
+      <CallToAction />
+      <Testimonials />
+      {/* <Pricing /> */}
+      <FAQ />
+      <Newsletter />
+      <Blog />
+    </>
+  );
 };
 
 export default Home;

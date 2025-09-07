@@ -5,19 +5,20 @@ const CallToAction = () => {
     <section className="relative z-1 overflow-hidden bg-primary py-17.5 lg:py-22.5 xl:py-25">
       <div className="mx-auto w-full max-w-[585px] px-4 text-center sm:px-8 xl:px-0">
         <h2 className="mb-5 font-satoshi text-3xl font-bold -tracking-[1.6px] text-white lg:text-heading-4 xl:text-heading-2">
-          Check Out The Demo
+          Bạn là sinh viên?
         </h2>
 
         <p className="text-gray-2">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent
-          condimentum dictum euismod malesuada lacus, non consequat quam.
+          Chia sẻ câu chuyện chọn ngành, chọn trường hoặc những bài học đáng nhớ
+          trên hành trình đại học của bạn. Trải nghiệm của bạn sẽ truyền cảm
+          hứng, giúp học sinh THPT tự tin định hướng tương lai!
         </p>
 
         <Link
           href="#"
           className="mt-7.5 inline-flex rounded-full bg-white px-7 py-3 font-satoshi font-medium -tracking-[0.2px] text-black hover:bg-opacity-90"
         >
-          Try Live Demo
+          Chia sẻ ngay
         </Link>
       </div>
 
