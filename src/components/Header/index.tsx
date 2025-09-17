@@ -1,6 +1,5 @@
 "use client";
-import logoLight from "@/../public/images/logo/logo-light.svg";
-import logo from "@/../public/images/logo/logo.svg";
+import logoUniguide from "@/../public/images/logo/logo-uniguide-new.png";
 import { Menu } from "@/types/menu";
 import Image from "next/image";
 import Link from "next/link";
@@ -58,11 +57,10 @@ const Header = () => {
           <div className="flex w-full items-center justify-between xl:w-4/12">
             <Link href="/">
               <Image
-                src={logoLight}
-                alt="Logo"
-                className="hidden w-full dark:block"
+                src={logoUniguide}
+                alt="Logo UniGuide"
+                className="h-10 w-auto max-h-10 object-contain"
               />
-              <Image src={logo} alt="Logo" className="w-full dark:hidden" />
             </Link>
 
             {/* <!-- Hamburger Toggle BTN --> */}
