@@ -39,7 +39,7 @@ const Hero = () => {
         </p>
 
         <Link
-          href="#"
+          href="/score-lookup"
           className="inline-flex items-center gap-4 rounded-full bg-black py-2 pl-7.5 pr-2 font-satoshi font-medium text-white hover:bg-opacity-90 dark:bg-primary"
         >
           <span> Tra cứu ngay </span>

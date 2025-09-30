@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -18,10 +18,13 @@ import {
   StarIcon,
   ChartBarIcon,
 } from "@heroicons/react/24/outline";
-import { universities } from "./universityDataReview";
+import { useUniversityDetail } from "@/hooks/useUniversityDetail";
+import { useReviews } from "@/hooks/useReviews";
 import TrainingChart from "@/components/ReviewUni/TrainingChart";
 import ReviewSection from "./ReviewSection";
 import Map from "./Map";
+import { useAuth } from "@/contexts/AuthContext";
+import AuthModal from "@/components/Auth/AuthModal";
 
 interface UniversityDetailProps {
   universityId: number;
@@ -30,21 +33,131 @@ interface UniversityDetailProps {
 const UniversityDetail: React.FC<UniversityDetailProps> = ({
   universityId,
 }) => {
-  const university = universities.find((uni) => uni.id === universityId);
+  const { isAuthenticated } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [savingInterest, setSavingInterest] = useState(false);
+  const [interested, setInterested] = useState(false);
+  const { university, loading, error, refetch } =
+    useUniversityDetail(universityId);
+  const {
+    reviews,
+    averageRating,
+    totalReviews,
+    fetchReviews,
+    createReview,
+    creating,
+  } = useReviews(universityId);
 
-  if (!university) {
+  // Fetch reviews when component mounts
+  useEffect(() => {
+    if (universityId) {
+      fetchReviews();
+    }
+  }, [universityId, fetchReviews]);
+
+  // Check interested status when auth/university changes
+  useEffect(() => {
+    const checkInterested = async () => {
+      try {
+        const resp = await fetch(
+          `/api/consult-info?universityId=${universityId}`
+        );
+        if (resp.status === 401) {
+          setInterested(false);
+          return;
+        }
+        const data = await resp.json();
+        setInterested(!!data?.interested);
+      } catch {
+        setInterested(false);
+      }
+    };
+    checkInterested();
+  }, [universityId, isAuthenticated]);
+
+  const handleInterest = async () => {
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
+      return;
+    }
+    if (interested || savingInterest) return;
+    setSavingInterest(true);
+    try {
+      const resp = await fetch(`/api/consult-info`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ universityId }),
+      });
+      const data = await resp.json();
+      if (resp.ok && (data.success || data.already)) {
+        setInterested(true);
+      }
+    } finally {
+      setSavingInterest(false);
+    }
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="h-[512px] bg-gray-300 animate-pulse"></div>
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-white rounded-2xl shadow-lg p-6 animate-pulse"
+                >
+                  <div className="h-6 bg-gray-300 rounded w-1/3 mb-4"></div>
+                  <div className="space-y-3">
+                    <div className="h-4 bg-gray-300 rounded w-full"></div>
+                    <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                    <div className="h-4 bg-gray-300 rounded w-1/2"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="space-y-6">
+              <div className="bg-white rounded-2xl shadow-lg p-6 animate-pulse">
+                <div className="h-6 bg-gray-300 rounded w-1/2 mb-4"></div>
+                <div className="space-y-3">
+                  <div className="h-4 bg-gray-300 rounded w-full"></div>
+                  <div className="h-4 bg-gray-300 rounded w-2/3"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !university) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Không tìm thấy thông tin trường đại học
+            {error || "Không tìm thấy thông tin trường đại học"}
           </h1>
-          <Link
-            href="/university-review"
-            className="text-blue-600 hover:text-blue-800"
-          >
-            ← Quay lại danh sách
-          </Link>
+          <div className="space-x-4">
+            <Link
+              href="/university-review"
+              className="text-blue-600 hover:text-blue-800"
+            >
+              ← Quay lại danh sách
+            </Link>
+            {error && (
+              <button
+                onClick={refetch}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Thử lại
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -63,11 +176,9 @@ const UniversityDetail: React.FC<UniversityDetailProps> = ({
     }
   };
 
-  const averageRating =
-    university.reviews.length > 0
-      ? university.reviews.reduce((sum, review) => sum + review.rating, 0) /
-        university.reviews.length
-      : 0;
+  // Use averageRating from reviews hook, fallback to university data
+  const displayAverageRating = averageRating || university.averageRating || 0;
+  const displayTotalReviews = totalReviews || university.reviews?.length || 0;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -130,20 +241,36 @@ const UniversityDetail: React.FC<UniversityDetailProps> = ({
                 <p className="text-xl text-blue-100 mb-2">
                   {university.abbreviation}
                 </p>
-                <div className="flex items-center gap-4 text-blue-100">
+                <div className="flex flex-wrap items-center gap-4 text-blue-100">
                   <div className="flex items-center gap-1">
                     <CalendarIcon className="h-5 w-5" />
                     <span>Thành lập {university.foundedYear}</span>
                   </div>
-                  {university.reviews.length > 0 && (
+                  {displayTotalReviews > 0 && (
                     <div className="flex items-center gap-1">
                       <StarIcon className="h-5 w-5 text-yellow-300 fill-current" />
                       <span>
-                        {averageRating.toFixed(1)} ({university.reviews.length}{" "}
+                        {displayAverageRating.toFixed(1)} ({displayTotalReviews}{" "}
                         đánh giá)
                       </span>
                     </div>
                   )}
+                  {/* Interest Button */}
+                  <button
+                    onClick={handleInterest}
+                    disabled={savingInterest || interested}
+                    className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                      interested
+                        ? "bg-green-600 text-white cursor-default"
+                        : "bg-white/20 hover:bg-white/30 text-white"
+                    }`}
+                  >
+                    {interested
+                      ? "Đã quan tâm"
+                      : savingInterest
+                        ? "Đang lưu..."
+                        : "Quan tâm"}
+                  </button>
                 </div>
               </motion.div>
             </div>
@@ -260,7 +387,7 @@ const UniversityDetail: React.FC<UniversityDetailProps> = ({
               {/* Majors */}
               <div className="mb-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  Ngành học
+                  Ngành học nổi bật
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {university.training.majors.map((major, index) => (
@@ -340,8 +467,14 @@ const UniversityDetail: React.FC<UniversityDetailProps> = ({
               transition={{ duration: 0.6, delay: 0.6 }}
             >
               <ReviewSection
-                reviews={university.reviews}
-                averageRating={averageRating}
+                reviews={
+                  reviews.length > 0 ? reviews : university.reviews || []
+                }
+                averageRating={displayAverageRating}
+                totalReviews={displayTotalReviews}
+                universityId={universityId}
+                onCreateReview={createReview}
+                creating={creating}
               />
             </motion.div>
           </div>
@@ -392,7 +525,7 @@ const UniversityDetail: React.FC<UniversityDetailProps> = ({
                     👥 Câu lạc bộ
                   </h4>
                   <div className="flex flex-wrap gap-1 mt-2">
-                    {university.facilities.clubs.map((club, index) => (
+                    {university.facilities.clubs?.map((club, index) => (
                       <span
                         key={index}
                         className="px-2 py-1 bg-indigo-100 text-indigo-800 rounded text-xs"
@@ -459,6 +592,12 @@ const UniversityDetail: React.FC<UniversityDetailProps> = ({
           </div>
         </div>
       </div>
+      {/* Auth Modal for login prompt */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        defaultView="login"
+      />
     </div>
   );
 };

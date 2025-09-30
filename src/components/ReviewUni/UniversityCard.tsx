@@ -10,7 +10,7 @@ import {
   CalendarIcon,
   ChartBarIcon,
 } from "@heroicons/react/24/outline";
-import { University } from "./universityDataReview";
+import { University } from "@/lib/api/universities";
 
 interface UniversityCardProps {
   university: University;

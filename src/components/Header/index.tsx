@@ -3,18 +3,30 @@ import logoUniguide from "@/../public/images/logo/logo-uniguide-new.png";
 import { Menu } from "@/types/menu";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Dropdown from "./Dropdown";
 import ThemeSwitcher from "./ThemeSwitcher";
 import { menuData } from "./menuData";
 import { onScroll } from "@/libs/scrollActive";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { AuthModal } from "@/components/Auth";
+import ProfileModal from "@/components/Auth/ProfileModal";
+import { UserIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 
 const Header = () => {
   const [stickyMenu, setStickyMenu] = useState(false);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalView, setAuthModalView] = useState<"login" | "register">(
+    "login"
+  );
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
 
   const pathUrl = usePathname();
+  const { user, isLoading, isAuthenticated, logout } = useAuth();
 
   const handleStickyMenu = () => {
     if (window.scrollY > 0) {
@@ -29,6 +41,38 @@ const Header = () => {
   const navbarToggleHandler = () => {
     setNavbarOpen(!navbarOpen);
   };
+
+  // Auth handlers
+  const openLoginModal = () => {
+    setAuthModalView("login");
+    setAuthModalOpen(true);
+  };
+
+  const openRegisterModal = () => {
+    setAuthModalView("register");
+    setAuthModalOpen(true);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    setUserDropdownOpen(false);
+  };
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (!userDropdownOpen) return;
+      const target = event.target as Node;
+      if (dropdownRef.current && !dropdownRef.current.contains(target)) {
+        setUserDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [userDropdownOpen]);
 
   useEffect(() => {
     if (window.location.pathname === "/") {
@@ -148,23 +192,96 @@ const Header = () => {
             <div className="mt-7 flex flex-wrap items-center lg:mt-0">
               <ThemeSwitcher />
 
-              <Link
-                href="#"
-                className="px-5 py-2 font-satoshi font-medium text-black dark:text-white"
-              >
-                Đăng nhập
-              </Link>
-              <Link
-                href="#"
-                className="rounded-full bg-primary px-5 py-2 font-satoshi font-medium text-white hover:bg-primary-dark"
-              >
-                Đăng kí
-              </Link>
+              {isLoading ? (
+                // Loading state
+                <div className="flex items-center px-5 py-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                </div>
+              ) : isAuthenticated && user ? (
+                // User is logged in - Show user dropdown
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                    className="flex items-center gap-2 rounded-full bg-gray-1 px-4 py-2 font-satoshi font-medium text-black hover:bg-gray-2 dark:bg-gray-dark dark:text-white dark:hover:bg-gray-700"
+                  >
+                    <UserIcon className="h-5 w-5" />
+                    <span className="hidden sm:inline">{user.fullname}</span>
+                    <ChevronDownIcon className="h-4 w-4" />
+                  </button>
+
+                  {userDropdownOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-56 rounded-lg border border-stroke bg-white py-2 shadow-lg dark:border-stroke-dark dark:bg-gray-dark">
+                      <div className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="font-medium text-black dark:text-white">
+                          {user.fullname}
+                        </div>
+                        <div>{user.email}</div>
+                      </div>
+                      <div className="border-t border-stroke dark:border-stroke-dark"></div>
+                      <button
+                        className="block w-full px-4 py-2 text-left text-sm text-black hover:bg-gray-1 dark:text-white dark:hover:bg-gray-700"
+                        onClick={() => {
+                          setUserDropdownOpen(false);
+                          setProfileOpen(true);
+                        }}
+                      >
+                        Thông tin cá nhân
+                      </button>
+                      <Link
+                        href="/my-reviews"
+                        className="block px-4 py-2 text-sm text-black hover:bg-gray-1 dark:text-white dark:hover:bg-gray-700"
+                        onClick={() => setUserDropdownOpen(false)}
+                      >
+                        Đánh giá của tôi
+                      </Link>
+                      <div className="border-t border-stroke dark:border-stroke-dark"></div>
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleLogout();
+                        }}
+                        className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-1 dark:text-red-400 dark:hover:bg-gray-700"
+                      >
+                        Đăng xuất
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                // User is not logged in - Show login/register buttons
+                <>
+                  <button
+                    onClick={openLoginModal}
+                    className="px-5 py-2 font-satoshi font-medium text-black transition hover:text-primary dark:text-white dark:hover:text-primary"
+                  >
+                    Đăng nhập
+                  </button>
+                  <button
+                    onClick={openRegisterModal}
+                    className="rounded-full bg-primary px-5 py-2 font-satoshi font-medium text-white transition hover:bg-primary-dark"
+                  >
+                    Đăng ký
+                  </button>
+                </>
+              )}
             </div>
             {/* <!--=== Nav Right End ===--> */}
           </div>
         </div>
       </header>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        defaultView={authModalView}
+      />
+
+      {/* Profile Modal */}
+      <ProfileModal
+        isOpen={profileOpen}
+        onClose={() => setProfileOpen(false)}
+      />
     </>
   );
 };

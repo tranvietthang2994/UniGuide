@@ -28,19 +28,36 @@ const TrainingChart: React.FC<TrainingChartProps> = ({ admissionScores }) => {
     );
   }
 
-  // Group data by year for better visualization
-  const chartData = admissionScores.reduce((acc, score) => {
-    const existingYear = acc.find((item) => item.year === score.year);
-    if (existingYear) {
-      existingYear[score.major] = score.score;
-    } else {
-      acc.push({
-        year: score.year,
-        [score.major]: score.score,
-      });
-    }
-    return acc;
-  }, [] as any[]);
+  // Group data by year for better visualization (use all data for charts)
+  const chartData = admissionScores
+    .reduce((acc, score) => {
+      const existingYear = acc.find((item) => item.year === score.year);
+      if (existingYear) {
+        existingYear[score.major] = score.score;
+      } else {
+        acc.push({
+          year: score.year,
+          [score.major]: score.score,
+        });
+      }
+      return acc;
+    }, [] as any[])
+    .sort((a, b) => a.year - b.year); // Sort by year ascending (2021-2025)
+
+  // Get the 5 newest scores for the table only, grouped by major with highest score
+  const newestScores = admissionScores
+    .sort((a, b) => b.year - a.year) // Sort by year descending (newest first)
+    .reduce((acc, score) => {
+      // Group by major and keep only the highest score for each major
+      const existingMajor = acc.find((item) => item.major === score.major);
+      if (!existingMajor || score.score > existingMajor.score) {
+        // Remove existing entry for this major if it exists
+        const filteredAcc = acc.filter((item) => item.major !== score.major);
+        return [...filteredAcc, score];
+      }
+      return acc;
+    }, [] as AdmissionScore[])
+    .slice(0, 5); // Take only the first 5 (newest 5)
 
   // Get unique majors for colors
   const majors = Array.from(
@@ -152,6 +169,9 @@ const TrainingChart: React.FC<TrainingChartProps> = ({ admissionScores }) => {
                   Ngành học
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Khối thi
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Năm
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -160,10 +180,15 @@ const TrainingChart: React.FC<TrainingChartProps> = ({ admissionScores }) => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {admissionScores.map((score, index) => (
+              {newestScores.map((score, index) => (
                 <tr key={index} className="hover:bg-gray-50">
                   <td className="px-4 py-3 text-sm font-medium text-gray-900">
                     {score.major}
+                  </td>
+                  <td className="px-4 py-3 text-sm text-gray-500">
+                    <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                      {(score as any).block || "N/A"}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-500">
                     {score.year}

@@ -3,18 +3,193 @@
 
 datasource db {
   provider          = "postgresql"
-  url               = env("DATABASE_URL")
-  shadowDatabaseUrl = env("SHADOW_DATABASE_URL") // Only needed when using a cloud provider that doesn't support the creation of new databases, like Heroku. Learn more: https://pris.ly/d/migrate-shadow
+  url               = env("POOLER_DATABASE_URL")
+  //shadowDatabaseUrl = env("SHADOW_DATABASE_URL") // Only needed when using a cloud provider that doesn't support the creation of new databases, like Heroku. Learn more: https://pris.ly/d/migrate-shadow
 }
 
 generator client {
   provider = "prisma-client-js"
 }
 
-// model Test {
-//   id    Int     @id @default(autoincrement())
-// }
+// UniGuide Database Schema
+model User {
+  id               Int       @id @default(autoincrement())
+  email            String    @unique @db.VarChar(50)
+  passwordHash     String    @db.VarChar(100) @map("password_hash")
+  fullname         String    @db.VarChar(50)
+  grade            Int
+  city             String    @db.VarChar(50)
+  schoolName       String?   @db.VarChar(100) @map("school_name")
+  phone            String?   @db.VarChar(20)
+  resetToken       String?   @db.VarChar(64) @map("reset_token")
+  resetTokenExpiry DateTime? @map("reset_token_expiry")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime? @updatedAt @map("updated_at")
 
+  // Relations
+  reviews       Review[]
+  consultInfos  ConsultInfo[] @relation("UserConsultInfos")
+
+  @@map("user")
+}
+
+model University {
+  id                    Int       @id @default(autoincrement())
+  // Basic Info
+  name                  String    @db.VarChar(100)
+  shortName             String?   @unique @db.VarChar(5) @map("short_name")
+  universityType        Int       @map("university_type") // 1:Public, 2:Private, 3:International
+  logoUrl               String?   @db.VarChar(200) @map("logo_url")
+  bannerUrl             String?   @db.VarChar(200) @map("banner_url")
+  foundedYear           Int?      @map("founded_year")
+  address               String?   @db.VarChar(500)
+  website               String?   @db.VarChar(200)
+  hotline               String?   @db.VarChar(15)
+  overview              String?   @db.Text
+  // Optional
+  priority              Int?
+  region                Int?      // 1:North, 2:Central, 3:South
+  rating                Float?
+  // Location
+  locationLatitude      Float?    @map("location_latitude")
+  locationLongitude     Float?    @map("location_longitude")
+  // Ranking
+  domesticRanking       String?   @db.VarChar(50) @map("domestic_ranking")
+  internationalRanking  String?   @db.VarChar(50) @map("international_ranking")
+  employmentRate        String?   @db.VarChar(50) @map("employment_rate")
+  // Fee
+  tuitionFee            String?   @db.VarChar(100) @map("tuition_fee")
+  // Facilities
+  dormitoryInfo         String?   @db.VarChar(100) @map("dormitory_info")
+  libraryInfo           String?   @db.VarChar(100) @map("library_info")
+  labInfo               String?   @db.VarChar(100) @map("lab_info")
+  // Audit
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime? @updatedAt @map("updated_at")
+
+  // Relations
+  trainingLevels        UniversityTrainingLevel[]
+  partnerCompanies      PartnerCompany[]
+  internshipPrograms    InternshipProgram[]
+  majors                Major[]
+  reviews               Review[]
+  consultInfos          ConsultInfo[]
+  posts                 Post[]
+
+  @@map("university")
+}
+
+model UniversityTrainingLevel {
+  universityId   Int @map("university_id")
+  trainingLevel  Int @map("training_level") // 1:University, 2:Graduate, 3:InternationalLinkage
+
+  // Relations
+  university     University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  @@unique([universityId, trainingLevel])
+  @@map("university_training_level")
+}
+
+model PartnerCompany {
+  id           Int    @id @default(autoincrement())
+  universityId Int    @map("university_id")
+  companyName  String @db.VarChar(100) @map("company_name")
+
+  // Relations
+  university   University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  @@map("partner_company")
+}
+
+model InternshipProgram {
+  id           Int    @id @default(autoincrement())
+  universityId Int    @map("university_id")
+  programName  String @db.VarChar(100) @map("program_name")
+
+  // Relations
+  university   University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  @@map("internship_program")
+}
+
+model Major {
+  id           Int    @id @default(autoincrement())
+  universityId Int    @map("university_id")
+  name         String @db.VarChar(100)
+  faculty      String? @db.VarChar(100)
+
+  // Relations
+  university      University      @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  admissionScores AdmissionScore[]
+
+  @@map("major")
+}
+
+model AdmissionScore {
+  id             Int   @id @default(autoincrement())
+  majorId        Int   @map("major_id")
+  admissionBlock String @db.VarChar(5) @map("admission_block") // 'A00', 'D07'
+  year           Int
+  score          Float?
+  quota          Int?
+
+  // Relations
+  major          Major @relation(fields: [majorId], references: [id], onDelete: Cascade)
+
+  @@unique([majorId, year, admissionBlock])
+  @@map("admission_score")
+}
+
+model Review {
+  id           Int       @id @default(autoincrement())
+  universityId Int       @map("university_id")
+  userId       Int       @map("user_id")
+  rating       Float     // 1-5 stars
+  comment      String?   @db.VarChar(500)
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  university   University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([universityId, userId])
+  @@map("review")
+}
+
+model ConsultInfo {
+  id           Int      @id @default(autoincrement())
+  universityId Int      @map("university_id")
+  userId       Int      @map("user_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  // Relations
+  university   University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  user         User       @relation("UserConsultInfos", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("consult_info")
+}
+
+model Post {
+  id           Int       @id @default(autoincrement())
+  title        String    @db.VarChar(200)
+  slug         String    @unique @db.VarChar(200)
+  content      String    @db.Text
+  thumbnailUrl String?   @db.VarChar(200) @map("thumbnail_url")
+  author       String    @db.VarChar(200)
+  universityId Int?      @map("university_id")
+  category     String?   @db.VarChar(100)
+  status       Int       @default(1) // 1:Draft, 2:Published, 3:Archived
+  publishedAt  DateTime? @map("published_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime? @updatedAt @map("updated_at")
+
+  // Relations
+  university   University? @relation(fields: [universityId], references: [id], onDelete: SetNull)
+
+  @@map("posts")
+}
+
+// Keep existing Auth models for compatibility
 model Account {
   id                String  @id @default(cuid())
   userId            String
@@ -29,7 +204,7 @@ model Account {
   id_token          String? @db.Text
   session_state     String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -39,7 +214,7 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model ApiKey {
@@ -48,10 +223,10 @@ model ApiKey {
   name      String   @unique
   userId    String
   createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      AuthUser @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model User {
+model AuthUser {
   id                     String    @id @default(cuid())
   name                   String?
   email                  String?   @unique
@@ -69,6 +244,8 @@ model User {
   accounts               Account[]
   sessions               Session[]
   apiKeys                ApiKey[]
+
+  @@map("auth_user")
 }
 
 model VerificationToken {

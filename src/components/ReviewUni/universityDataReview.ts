@@ -7,6 +7,7 @@ export interface AdmissionScore {
   year: number;
   major: string;
   score: number;
+  examBlock?: string; // Khối thi (A00, A01, B00, C00, D01, etc.)
 }
 
 export interface Training {

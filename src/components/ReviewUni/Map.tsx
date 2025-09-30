@@ -55,7 +55,7 @@ const Map: React.FC<MapProps> = ({
 
   try {
     return (
-      <div className="w-full h-48 rounded-lg overflow-hidden shadow-md">
+      <div className="w-full h-64 rounded-lg overflow-hidden shadow-md">
         <MapContainer
           center={[latitude, longitude]}
           zoom={15}

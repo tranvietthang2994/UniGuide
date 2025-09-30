@@ -1,7 +1,15 @@
+"use client";
 import React from "react";
+import { useEffect } from "react";
 import Image from "next/image";
+import getAllUser from "../../../services/apiUser";
 
 const Footer = () => {
+  useEffect(function () {
+    getAllUser().then((data) => {
+      console.log(data);
+    });
+  }, []);
   return (
     <footer className="relative z-1 mt-auto overflow-hidden bg-black py-17.5 lg:py-22.5 xl:py-27.5">
       <div className="mx-auto max-w-[1170px] px-4 sm:px-8 xl:px-0">
@@ -17,7 +25,7 @@ const Footer = () => {
               />
             </a>
             <p className="mt-5 text-gray-5">
-              © Your SaaS - Demo SaaS website created using SaaSBold
+              © UniGuide - Đồng hành cùng tương lai của bạn
             </p>
 
             <ul className="mt-11 flex items-center gap-2">
@@ -83,40 +91,38 @@ const Footer = () => {
           <div className="flex w-full flex-col justify-between gap-10 sm:w-auto sm:flex-row xl:gap-20">
             <div className="w-full sm:w-auto">
               <h2 className="mb-5 font-satoshi text-lg font-bold -tracking-[0.2px] text-white">
-                Products
+                Liên hệ
               </h2>
 
               <ul className="flex flex-col gap-3">
                 <li>
                   <a
                     className="text-gray-5 duration-200 ease-out hover:text-white"
-                    href="#"
+                    href="https://www.facebook.com/uniguidevn"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Features
+                    uniguidevn@gmail.com
                   </a>
                 </li>
                 <li>
                   <a
                     className="text-gray-5 duration-200 ease-out hover:text-white"
-                    href="#"
+                    href="https://www.facebook.com/uniguidevn"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Integrations
+                    0918056789
                   </a>
                 </li>
                 <li>
                   <a
                     className="text-gray-5 duration-200 ease-out hover:text-white"
-                    href="#"
+                    href="https://www.facebook.com/daihocfptdanang"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Pricing & Plans
-                  </a>
-                </li>
-                <li>
-                  <a
-                    className="text-gray-5 duration-200 ease-out hover:text-white"
-                    href="#"
-                  >
-                    Changelog
+                    FPT University
                   </a>
                 </li>
               </ul>
@@ -124,40 +130,68 @@ const Footer = () => {
 
             <div className="w-full sm:w-auto">
               <h2 className="mb-5 font-satoshi text-lg font-bold -tracking-[0.2px] text-white">
-                Resources
+                Đội ngũ
               </h2>
 
               <ul className="flex flex-col gap-3">
                 <li>
                   <a
                     className="text-gray-5 duration-200 ease-out hover:text-white"
-                    href="#"
+                    href="https://www.facebook.com/nhii.nguyenn.715216"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Our Blog
+                    Nguyễn Thị Thảo Nhi
                   </a>
                 </li>
                 <li>
                   <a
                     className="text-gray-5 duration-200 ease-out hover:text-white"
-                    href="#"
+                    href="https://www.facebook.com/gnhi.nguyenthanh"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Heatmaps
+                    Nguyễn Thanh Giáp Nhi
                   </a>
                 </li>
                 <li>
                   <a
                     className="text-gray-5 duration-200 ease-out hover:text-white"
-                    href="#"
+                    href="https://www.facebook.com/haiphuongmientrung"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Affiliate Program
+                    Nguyễn Đặng Hải Phương
                   </a>
                 </li>
                 <li>
                   <a
                     className="text-gray-5 duration-200 ease-out hover:text-white"
-                    href="#"
+                    href="https://www.facebook.com/hkhiem26.11"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Integrations
+                    Hoàng Huy Khiêm
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-gray-5 duration-200 ease-out hover:text-white"
+                    href="https://www.facebook.com/tvt.2994"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Trần Việt Thắng
+                  </a>
+                </li>
+                <li>
+                  <a
+                    className="text-gray-5 duration-200 ease-out hover:text-white"
+                    href="https://www.facebook.com/iamtiss"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Trần Minh Quang
                   </a>
                 </li>
               </ul>
@@ -165,73 +199,48 @@ const Footer = () => {
 
             <div className="w-full sm:w-auto">
               <h2 className="mb-5 font-satoshi text-lg font-bold -tracking-[0.2px] text-white">
-                Products
+                Công ty
               </h2>
 
               <ul className="flex flex-col gap-3">
                 <li>
                   <a
                     className="text-gray-5 duration-200 ease-out hover:text-white"
-                    href="#"
+                    href="https://www.facebook.com/uniguidevn"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Features
+                    Về chúng tôi
                   </a>
                 </li>
                 <li>
                   <a
                     className="text-gray-5 duration-200 ease-out hover:text-white"
-                    href="#"
+                    href="https://www.facebook.com/uniguidevn"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Integrations
+                    Hành trình
                   </a>
                 </li>
                 <li>
                   <a
                     className="text-gray-5 duration-200 ease-out hover:text-white"
-                    href="#"
+                    href="https://www.facebook.com/uniguidevn"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Pricing & Plans
+                    Hợp tác phát triển
                   </a>
                 </li>
                 <li>
                   <a
                     className="text-gray-5 duration-200 ease-out hover:text-white"
-                    href="#"
+                    href="https://www.facebook.com/uniguidevn"
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    Changelog
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div className="w-full sm:w-auto">
-              <h2 className="mb-5 font-satoshi text-lg font-bold -tracking-[0.2px] text-white">
-                Company
-              </h2>
-
-              <ul className="flex flex-col gap-3">
-                <li>
-                  <a
-                    className="text-gray-5 duration-200 ease-out hover:text-white"
-                    href="#"
-                  >
-                    About Us
-                  </a>
-                </li>
-                <li>
-                  <a
-                    className="text-gray-5 duration-200 ease-out hover:text-white"
-                    href="#"
-                  >
-                    Our Story
-                  </a>
-                </li>
-                <li>
-                  <a
-                    className="text-gray-5 duration-200 ease-out hover:text-white"
-                    href="#"
-                  >
-                    Work With Us
+                    Điều khoản
                   </a>
                 </li>
               </ul>
@@ -265,3 +274,6 @@ const Footer = () => {
 };
 
 export default Footer;
+function apiUser() {
+  throw new Error("Function not implemented.");
+}
