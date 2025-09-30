@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/services/supabase-admin";
 
-export async function GET(
-  request: Request,
-  context: { params: { slug: string } }
-) {
+export async function GET(request: Request, context: any) {
   try {
-    const { slug } = context.params;
+    const { slug } = context.params as { slug: string };
 
     console.log("Blog Detail API - Fetching post with slug:", slug);
 

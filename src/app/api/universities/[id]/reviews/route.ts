@@ -3,12 +3,9 @@ import supabase from "../../../../../../services/supabase";
 import { getUserFromRequest } from "@/lib/auth";
 
 // GET - Fetch reviews for a university
-export async function GET(
-  request: Request,
-  context: { params: { id: string } }
-) {
+export async function GET(request: Request, context: any) {
   try {
-    const { id } = context.params;
+    const { id } = context.params as { id: string };
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get("page") || "1");
@@ -99,12 +96,9 @@ export async function GET(
 }
 
 // POST - Create a new review
-export async function POST(
-  request: Request,
-  context: { params: { id: string } }
-) {
+export async function POST(request: Request, context: any) {
   try {
-    const { id } = context.params;
+    const { id } = context.params as { id: string };
     const user = getUserFromRequest(request as any);
 
     if (!user) {

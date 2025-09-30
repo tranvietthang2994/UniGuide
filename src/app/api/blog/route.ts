@@ -60,9 +60,11 @@ export async function GET(request: NextRequest) {
       .eq("status", params.status);
     const total = count || 0;
 
-    // Apply pagination and ordering
-    const from = (params.page - 1) * params.limit;
-    const to = from + params.limit - 1;
+    // Apply pagination and ordering (use safe defaults)
+    const page = params.page ?? 1;
+    const limit = params.limit ?? 6;
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
 
     console.log("Blog API - Executing query with range:", { from, to });
 
@@ -93,9 +95,9 @@ export async function GET(request: NextRequest) {
     const response: BlogListResponse = {
       posts: transformedPosts,
       total,
-      page: params.page,
-      limit: params.limit,
-      totalPages: Math.ceil(total / params.limit),
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
     };
 
     console.log("Blog API - Fetched posts:", response);
