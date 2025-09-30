@@ -1,14 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import supabase from "../../../../../../services/supabase";
 import { getUserFromRequest } from "@/lib/auth";
 
 // GET - Fetch reviews for a university
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = context.params;
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get("page") || "1");
@@ -100,12 +100,12 @@ export async function GET(
 
 // POST - Create a new review
 export async function POST(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
-    const user = getUserFromRequest(request);
+    const { id } = context.params;
+    const user = getUserFromRequest(request as any);
 
     if (!user) {
       return NextResponse.json(
@@ -195,12 +195,17 @@ export async function POST(
     // Update university average rating
     await updateUniversityRating(parseInt(id));
 
+    const userField = (newReview as any)?.user;
+    const userFullname = Array.isArray(userField)
+      ? userField[0]?.fullname
+      : userField?.fullname;
+
     return NextResponse.json(
       {
         success: true,
         data: {
           id: newReview.id,
-          user: newReview.user?.fullname || "Anonymous",
+          user: userFullname || "Anonymous",
           rating: newReview.rating,
           comment: newReview.comment,
           createdAt: newReview.created_at,
@@ -240,4 +245,3 @@ async function updateUniversityRating(universityId: number) {
     console.error("Failed to update university rating:", error);
   }
 }
-

@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import supabase from "../../../../../services/supabase";
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
+  request: Request,
+  context: { params: { id: string } }
 ) {
   try {
-    const { id } = params;
+    const { id } = context.params;
 
     if (!id) {
       return NextResponse.json(
@@ -185,11 +185,13 @@ export async function GET(
           comment: r.comment,
           createdAt: r.created_at,
         })) || [],
-      averageRating:
-        reviews?.length > 0
-          ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
-            reviews.length
-          : 0,
+      averageRating: (() => {
+        const safeReviews = reviews || [];
+        return safeReviews.length > 0
+          ? safeReviews.reduce((sum: number, r: any) => sum + r.rating, 0) /
+              safeReviews.length
+          : 0;
+      })(),
       totalReviews: reviews?.length || 0,
     };
 
