@@ -3,10 +3,10 @@ import { getSupabaseAdmin } from "@/services/supabase-admin";
 
 export async function GET(
   request: Request,
-  { params }: { params: { slug: string } }
+  context: { params: { slug: string } }
 ) {
   try {
-    const { slug } = params;
+    const { slug } = context.params;
 
     console.log("Blog Detail API - Fetching post with slug:", slug);
 
