@@ -30,9 +30,14 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
   const [fieldErrors, setFieldErrors] = useState<{
     [key: string]: string;
   }>({});
-  const [passwordStrength, setPasswordStrength] = useState({
+  const [passwordStrength, setPasswordStrength] = useState<{
+    score: number;
+    feedback: string;
+    level: string;
+  }>({
     score: 0,
     feedback: "",
+    level: "Rất yếu",
   });
   const [acceptTerms, setAcceptTerms] = useState(false);
 
