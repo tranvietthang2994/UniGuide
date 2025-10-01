@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 type ChatMessage = {
   role: "system" | "user" | "assistant";
   content: string;
 };
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const body = await request.json().catch(() => ({}));
     const messages = (body?.messages || []) as ChatMessage[];

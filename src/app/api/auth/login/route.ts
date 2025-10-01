@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/services/supabase-admin";
 import { verifyPassword, generateToken, validateEmail } from "@/lib/auth";
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const supabase = getSupabaseAdmin();
     const body = await request.json();

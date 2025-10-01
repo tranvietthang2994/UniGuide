@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/services/supabase-admin";
 import { getUserFromRequest } from "@/lib/auth";
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
     const supabase = getSupabaseAdmin();
     // Get user from JWT token
-    const tokenUser = getUserFromRequest(request);
+    const tokenUser = getUserFromRequest(request as any);
 
     if (!tokenUser) {
       return NextResponse.json(

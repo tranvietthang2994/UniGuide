@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/services/supabase-admin";
 import { BlogListParams, BlogListResponse } from "@/types/blog";
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
     console.log("Blog API - Request received");
 

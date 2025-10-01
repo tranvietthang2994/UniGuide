@@ -3,9 +3,9 @@
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { usePathname, useSearchParams } from "next/navigation";
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+function ProvidersInner({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -59,5 +59,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <ThemeProvider attribute="class" enableSystem={false} defaultTheme="light">
       <AuthProvider>{children}</AuthProvider>
     </ThemeProvider>
+  );
+}
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ProvidersInner>{children}</ProvidersInner>
+    </Suspense>
   );
 }

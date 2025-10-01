@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import supabase from "../../../../services/supabase";
 import { getUserFromRequest } from "@/lib/auth";
 
 // GET: check if current user is interested in a university (query: universityId)
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
-    const user = getUserFromRequest(request);
+    const user = getUserFromRequest(request as any);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -42,9 +42,9 @@ export async function GET(request: NextRequest) {
 }
 
 // POST: add interest (body: { universityId:number })
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const user = getUserFromRequest(request);
+    const user = getUserFromRequest(request as any);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -102,4 +102,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

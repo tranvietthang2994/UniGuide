@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/services/supabase-admin";
 import {
   hashPassword,
@@ -10,7 +10,7 @@ import {
   validatePhone,
 } from "@/lib/auth";
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const supabase = getSupabaseAdmin();
     const body = await request.json();
