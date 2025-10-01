@@ -30,10 +30,19 @@ export async function GET(_request: Request) {
       const since = new Date();
       since.setDate(since.getDate() - 29);
 
+      console.log("📊 Fetching analytics data since:", since.toISOString());
+
       const { data: visits, error: visitErr } = await supabase
         .from("analytics_visit")
         .select("created_at, region, city, country, path")
-        .gte("created_at", since.toISOString());
+        .gte("created_at", since.toISOString())
+        .order("created_at", { ascending: false });
+
+      console.log("📊 Analytics query result:", {
+        visitsCount: visits?.length || 0,
+        error: visitErr,
+        latestVisit: visits?.[0]?.created_at,
+      });
 
       if (!visitErr && visits) {
         // Group by date
@@ -48,10 +57,11 @@ export async function GET(_request: Request) {
           const key = new Date(v.created_at).toISOString().slice(0, 10);
           mapDaily.set(key, (mapDaily.get(key) || 0) + 1);
         }
-        trafficDaily = Array.from(mapDaily.entries()).map(([date, visits]) => ({
-          date,
-          visits,
-        }));
+        trafficDaily = Array.from(mapDaily.entries())
+          .map(([date, visits]) => ({ date, visits }))
+          .sort((a, b) => a.date.localeCompare(b.date));
+
+        console.log("📊 Traffic daily data:", trafficDaily.slice(-5)); // Show last 5 days
 
         // Top regions: prefer region, then city, then country
         const regionMap = new Map<string, number>();
@@ -86,13 +96,23 @@ export async function GET(_request: Request) {
       // analytics tables may not exist yet – return empty analytics gracefully
     }
 
-    return NextResponse.json({
+    const result = {
       success: true,
       totals,
       trafficDaily,
       topRegions,
       topPaths,
+    };
+
+    console.log("📊 Metrics API response:", {
+      totalsCount: Object.values(totals).reduce((a, b) => a + b, 0),
+      trafficDays: trafficDaily.length,
+      topRegionsCount: topRegions.length,
+      topPathsCount: topPaths.length,
+      latestTraffic: trafficDaily[trafficDaily.length - 1],
     });
+
+    return NextResponse.json(result);
   } catch (e) {
     console.error("/api/admin/metrics error:", e);
     return NextResponse.json(

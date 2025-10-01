@@ -12,7 +12,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "path is required" }, { status: 400 });
     }
 
-    // Derive IP and UA - check multiple common headers, then fallback to body.ip
+    console.log("📊 Recording visit:", {
+      path,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Derive IP and UA - check multiple common headers
     const headers = request.headers;
     const hxff = headers.get("x-forwarded-for") || "";
     const candidates = [
@@ -26,20 +31,22 @@ export async function POST(request: Request) {
     const ip = candidates.length > 0 ? candidates[0] : undefined;
     const userAgent = request.headers.get("user-agent") || undefined;
 
-    // Prefer client-provided geo (useful in local/dev), else try server-side lookup
+    // Simple geo detection - try once, don't block on failure
     let country: string | null = body?.country ?? null;
     let region: string | null = body?.region ?? null;
     let city: string | null = body?.city ?? null;
-    if (!country && !region && !city) {
+
+    if (!country && !region && !city && ip) {
       try {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 1200);
-        const qs = ip
-          ? `?ip=${encodeURIComponent(ip)}&fields=ip,country,region,city`
-          : `?fields=ip,country,region,city`;
-        const geoResp = await fetch(`https://ipwho.is/${qs}`, {
-          signal: controller.signal,
-        });
+        const timeout = setTimeout(() => controller.abort(), 2000);
+
+        const geoResp = await fetch(
+          `https://ipwho.is/?ip=${encodeURIComponent(ip)}&fields=ip,country,region,city`,
+          {
+            signal: controller.signal,
+          }
+        );
         clearTimeout(timeout);
         if (geoResp.ok) {
           const j: any = await geoResp.json();
@@ -49,7 +56,9 @@ export async function POST(request: Request) {
             city = j.city || null;
           }
         }
-      } catch {}
+      } catch (error) {
+        console.log("Geo detection failed, continuing without geo data");
+      }
     }
 
     const { error } = await supabase.from("analytics_visit").insert([
@@ -66,16 +75,17 @@ export async function POST(request: Request) {
     ]);
 
     if (error) {
-      console.error("analytics_visit insert error:", error);
+      console.error("❌ analytics_visit insert error:", error);
       return NextResponse.json(
         { error: "Failed to record visit" },
         { status: 500 }
       );
     }
 
+    console.log("✅ Visit recorded successfully");
     return NextResponse.json({ success: true });
   } catch (e) {
-    console.error("/api/analytics/visit error:", e);
+    console.error("❌ /api/analytics/visit error:", e);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

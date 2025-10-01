@@ -24,35 +24,37 @@ function ProvidersInner({ children }: { children: React.ReactNode }) {
             ? document.referrer
             : undefined;
 
-        // Send a single visit; server will enrich geo via IP
-        // Try to include client IP (no geo) to improve server resolution in some hosts
-        // Try to include client IP and geo for local/dev fallback
-        let clientIp: string | undefined = undefined;
-        let geo: { country?: string; region?: string; city?: string } = {};
-        try {
-          const ipResp = await fetch("https://api.ipify.org?format=json");
-          const ipJson = await ipResp.json();
-          if (ipJson?.ip) clientIp = ipJson.ip;
-        } catch {}
-        try {
-          const res = await fetch(
-            "https://ipwho.is/?fields=ip,country,region,city"
-          );
-          const j = await res.json();
-          if (j && j.success !== false) {
-            geo = { country: j.country, region: j.region, city: j.city };
-            if (!clientIp && j.ip) clientIp = j.ip;
-          }
-        } catch {}
+        console.log("🔍 Tracking visit:", {
+          path,
+          referrer,
+          timestamp: new Date().toISOString(),
+        });
 
-        fetch("/api/analytics/visit", {
+        // Simple tracking without external API dependencies
+        const response = await fetch("/api/analytics/visit", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ path, referrer, ip: clientIp, ...geo }),
-        }).catch(() => {});
-      } catch {}
+          body: JSON.stringify({
+            path,
+            referrer,
+            // Let server handle IP and geo detection
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.error("❌ Analytics tracking failed:", errorData);
+        } else {
+          console.log("✅ Analytics tracking successful");
+        }
+      } catch (error) {
+        console.error("❌ Analytics tracking error:", error);
+      }
     };
-    track();
+
+    // Add a small delay to ensure page is fully loaded
+    const timeoutId = setTimeout(track, 100);
+    return () => clearTimeout(timeoutId);
   }, [pathname, searchParams]);
 
   return (
